@@ -36,6 +36,12 @@ The 12-month simulator looks only for macOS Calendar events whose title is exact
 
 Each future payday applies the same monthly baseline, pays the remaining credit-card balance first, fills the selected emergency target next, and assigns the remaining amount to long-term savings. March can be switched between 2.5× and 3× net income. The simulation assumes income and baseline expenses remain unchanged and that no new credit-card spending, interest, or fees are added.
 
+## Desktop widget
+
+The WidgetKit extension provides small and medium `BudgetFlow Overview` widgets. Both show the available monthly amount and CIMB payoff progress; the medium widget also shows the financial-stability indicator and emergency-fund progress. Amounts are marked privacy-sensitive so macOS can redact them when the system privacy mode requires it.
+
+The main app deterministically recalculates and publishes a compact summary whenever the profile, preferences, or allocation changes. The app and widget exchange only that summary through their private app-group container. Selecting the widget opens the app at the dashboard.
+
 ## Financial Stability Score
 
 | Component | Weight |

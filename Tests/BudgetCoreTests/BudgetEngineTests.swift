@@ -130,6 +130,23 @@ final class BudgetEngineTests: XCTestCase {
         XCTAssertEqual(plan.total, 900)
     }
 
+    func testWidgetSummaryRoundTripsWithoutLosingDecimalValues() throws {
+        let summary = BudgetWidgetSummary(
+            availableToAllocate: Decimal(string: "1923.00")!,
+            financialScore: 77,
+            plannedCreditCardPayment: Decimal(string: "1824.00")!,
+            projectedCreditCardBalance: Decimal(string: "1220.13")!,
+            emergencyBalance: Decimal(string: "2100.00")!,
+            emergencyTarget: Decimal(string: "2823.00")!,
+            updatedAt: Date(timeIntervalSince1970: 1_700_000_000)
+        )
+
+        let encoded = try JSONEncoder().encode(summary)
+        let decoded = try JSONDecoder().decode(BudgetWidgetSummary.self, from: encoded)
+
+        XCTAssertEqual(decoded, summary)
+    }
+
     func testFuturePlanClearsCardThenFundsEmergencyAndMarchBonusSavings() throws {
         let calendar = Calendar(identifier: .gregorian)
         let november = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 11, day: 24)))

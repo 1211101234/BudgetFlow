@@ -27,12 +27,14 @@ final class BudgetStore: ObservableObject {
         self.profile = profile
         allocation = BudgetEngine.suggestedAllocation(for: profile)
         persist()
+        publishWidgetSummary()
     }
 
     func updateProfile(_ profile: BudgetProfile) {
         self.profile = profile
         allocation = BudgetEngine.suggestedAllocation(for: profile)
         persist()
+        publishWidgetSummary()
     }
 
     func updatePlanningPreferences(_ mutation: (inout BudgetPreferences) -> Void) {
@@ -40,17 +42,20 @@ final class BudgetStore: ObservableObject {
         mutation(&profile.preferences)
         self.profile = profile
         persist()
+        publishWidgetSummary()
     }
 
     func updateAllocation(_ allocation: AllocationPlan) {
         self.allocation = allocation
         persist()
+        publishWidgetSummary()
     }
 
     func restoreSuggestedAllocation() {
         guard let profile else { return }
         allocation = BudgetEngine.suggestedAllocation(for: profile)
         persist()
+        publishWidgetSummary()
     }
 
     func dismissError() {
@@ -63,6 +68,7 @@ final class BudgetStore: ObservableObject {
             guard let saved = try await repository.load() else { return }
             profile = saved.profile
             allocation = saved.allocation
+            publishWidgetSummary()
         } catch {
             errorMessage = "The saved budget could not be loaded. Your file was not changed."
         }
@@ -78,5 +84,10 @@ final class BudgetStore: ObservableObject {
                 errorMessage = "BudgetFlow could not save the latest changes."
             }
         }
+    }
+
+    private func publishWidgetSummary() {
+        guard let profile else { return }
+        BudgetWidgetPublisher.publish(profile: profile, allocation: allocation)
     }
 }

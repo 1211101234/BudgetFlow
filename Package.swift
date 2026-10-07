@@ -9,6 +9,7 @@ let package = Package(
     ],
     products: [
         .executable(name: "BudgetFlow", targets: ["BudgetFlow"]),
+        .executable(name: "BudgetFlowWidget", targets: ["BudgetFlowWidget"]),
         .library(name: "BudgetCore", targets: ["BudgetCore"])
     ],
     targets: [
@@ -17,6 +18,10 @@ let package = Package(
             name: "BudgetFlow",
             dependencies: ["BudgetCore"],
             resources: [.process("Resources")]
+        ),
+        .executableTarget(
+            name: "BudgetFlowWidget",
+            dependencies: ["BudgetCore"]
         ),
         .testTarget(
             name: "BudgetCoreTests",

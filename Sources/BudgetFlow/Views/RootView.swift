@@ -17,6 +17,24 @@ private enum AppSection: String, CaseIterable, Identifiable {
         case .budget: "list.bullet.rectangle"
         }
     }
+
+    var subtitle: String {
+        switch self {
+        case .dashboard: "Monthly position"
+        case .allocation: "Adjust this payday"
+        case .futurePlans: "Forecast 12 months"
+        case .budget: "Income, debts and limits"
+        }
+    }
+
+    var tint: Color {
+        switch self {
+        case .dashboard: BudgetTheme.brand
+        case .allocation: BudgetTheme.positive
+        case .futurePlans: BudgetTheme.information
+        case .budget: BudgetTheme.warning
+        }
+    }
 }
 
 struct RootView: View {
@@ -32,13 +50,19 @@ struct RootView: View {
                 SetupView { store.completeSetup(with: $0) }
             } else {
                 NavigationSplitView(columnVisibility: $columnVisibility) {
-                    List(AppSection.allCases, selection: $selection) { section in
-                        Label(section.rawValue, systemImage: section.systemImage)
-                            .tag(section)
-                            .help("Open \(section.rawValue)")
+                    List(selection: $selection) {
+                        Section("Plan") {
+                            ForEach([AppSection.dashboard, .allocation, .futurePlans]) {
+                                navigationRow($0)
+                            }
+                        }
+                        Section("Manage") {
+                            navigationRow(.budget)
+                        }
                     }
+                    .listStyle(.sidebar)
                     .tint(BudgetTheme.brand)
-                    .navigationSplitViewColumnWidth(220)
+                    .navigationSplitViewColumnWidth(min: 240, ideal: 260, max: 300)
                     .safeAreaInset(edge: .top) {
                         HStack(spacing: 10) {
                             BrandMark(size: 38)
@@ -59,11 +83,7 @@ struct RootView: View {
                         .accessibilityLabel("BudgetFlow, plan with clarity")
                     }
                     .safeAreaInset(edge: .bottom) {
-                        Label("Planning guidance only", systemImage: "info.circle")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .padding(12)
-                            .help("The stability score is not a bank or credit-bureau score.")
+                        sidebarSummary
                     }
                 } detail: {
                     detailView
@@ -83,6 +103,73 @@ struct RootView: View {
         } message: {
             Text(store.errorMessage ?? "An unexpected error occurred.")
         }
+        .onOpenURL { url in
+            guard url.scheme == "budgetflow", url.host == "dashboard" else { return }
+            selection = .dashboard
+            columnVisibility = .all
+        }
+    }
+
+    private func navigationRow(_ section: AppSection) -> some View {
+        HStack(spacing: 11) {
+            Image(systemName: section.systemImage)
+                .font(.system(size: 15, weight: .semibold))
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(section.tint)
+                .frame(width: 32, height: 32)
+                .background(section.tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 9))
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(section.rawValue)
+                    .font(.body.weight(.semibold))
+                Text(section.subtitle)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+        }
+        .padding(.vertical, 3)
+        .tag(section)
+        .help("Open \(section.rawValue)")
+        .accessibilityElement(children: .combine)
+    }
+
+    private var sidebarSummary: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Label("This month", systemImage: "sparkles")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(BudgetTheme.positive)
+                Spacer()
+                if let score = store.score?.value {
+                    Text("\(score)/100")
+                        .font(.caption.monospacedDigit().weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
+            }
+            if let available = store.snapshot?.availableToAllocate {
+                Text(AppFormatters.currency(available))
+                    .font(.title3.bold())
+                    .foregroundStyle(BudgetTheme.brand)
+                    .monospacedDigit()
+                Text("available after required outgoings")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+            Divider()
+            Label("Planning guidance only", systemImage: "info.circle")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .help("The stability score is not a bank or credit-bureau score.")
+        }
+        .padding(12)
+        .background(BudgetTheme.surface.opacity(0.72), in: RoundedRectangle(cornerRadius: 14))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(BudgetTheme.divider.opacity(0.7), lineWidth: 1)
+        }
+        .padding(10)
+        .accessibilityElement(children: .contain)
     }
 
     @ViewBuilder

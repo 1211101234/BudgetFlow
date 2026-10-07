@@ -6,6 +6,8 @@ BudgetFlow uses an optimistic-finance palette with indigo as the brand color, te
 
 Cards use a restrained pixel-inspired top accent that connects the interface to the 8-bit app icon without making financial information feel like a game.
 
+The sidebar separates planning views from budget management, gives each destination an icon and explanatory subtitle, and keeps the current available amount and score visible in a compact summary card. Its wider minimum width prevents labels from truncating at the normal window size.
+
 ## Accessibility behavior
 
 - Meaning is never communicated by color alone. Status cards include a severity label, icon, and complete text.
@@ -17,6 +19,8 @@ Cards use a restrained pixel-inspired top accent that connects the interface to 
 - Primary and cancel actions in sheets support the standard Return and Escape keyboard actions.
 - The allocation reset action supports Shift-Command-R and includes a tooltip.
 - Future-plan rows identify whether each payday came from Calendar or is an estimate, and Calendar access is requested only from an explicit button.
+- Sidebar destinations combine their title and subtitle into a single VoiceOver element, while icon colors remain supplementary.
+- Widget currency values use the system privacy-sensitive modifier so macOS can redact them when appropriate.
 
 ## App icon
 

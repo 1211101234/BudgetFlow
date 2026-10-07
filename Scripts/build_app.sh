@@ -11,6 +11,11 @@ CONTENTS_DIRECTORY="${APP_BUNDLE}/Contents"
 MACOS_DIRECTORY="${CONTENTS_DIRECTORY}/MacOS"
 FRAMEWORKS_DIRECTORY="${CONTENTS_DIRECTORY}/Frameworks"
 RESOURCES_DIRECTORY="${CONTENTS_DIRECTORY}/Resources"
+PLUGINS_DIRECTORY="${CONTENTS_DIRECTORY}/PlugIns"
+WIDGET_BUNDLE="${PLUGINS_DIRECTORY}/BudgetFlowWidget.appex"
+WIDGET_CONTENTS_DIRECTORY="${WIDGET_BUNDLE}/Contents"
+WIDGET_MACOS_DIRECTORY="${WIDGET_CONTENTS_DIRECTORY}/MacOS"
+WIDGET_RESOURCES_DIRECTORY="${WIDGET_CONTENTS_DIRECTORY}/Resources"
 MODULE_CACHE="${BUILD_ROOT}/module-cache"
 SWIFT_COMPILER="$(xcrun --find swiftc)"
 TARGET="arm64-apple-macosx14.0"
@@ -26,7 +31,13 @@ else
 fi
 
 rm -rf "${BUILD_ROOT}" "${APP_BUNDLE}"
-mkdir -p "${MODULE_CACHE}" "${MACOS_DIRECTORY}" "${FRAMEWORKS_DIRECTORY}" "${RESOURCES_DIRECTORY}"
+mkdir -p \
+    "${MODULE_CACHE}" \
+    "${MACOS_DIRECTORY}" \
+    "${FRAMEWORKS_DIRECTORY}" \
+    "${RESOURCES_DIRECTORY}" \
+    "${WIDGET_MACOS_DIRECTORY}" \
+    "${WIDGET_RESOURCES_DIRECTORY}"
 
 CLANG_MODULE_CACHE_PATH="${MODULE_CACHE}" "${SWIFT_COMPILER}" \
     -emit-library \
@@ -56,13 +67,36 @@ CLANG_MODULE_CACHE_PATH="${MODULE_CACHE}" "${SWIFT_COMPILER}" \
     "${PROJECT_ROOT}"/Sources/BudgetFlow/Views/*.swift \
     -o "${MACOS_DIRECTORY}/BudgetFlow"
 
+CLANG_MODULE_CACHE_PATH="${MODULE_CACHE}" "${SWIFT_COMPILER}" \
+    -parse-as-library \
+    -application-extension \
+    -swift-version 6 \
+    -sdk "${SDK_ROOT}" \
+    -target "${TARGET}" \
+    -I "${BUILD_ROOT}" \
+    -L "${FRAMEWORKS_DIRECTORY}" \
+    -lBudgetCore \
+    -Xlinker -rpath \
+    -Xlinker @executable_path/../../../../Frameworks \
+    "${PROJECT_ROOT}"/Sources/BudgetFlowWidget/*.swift \
+    -o "${WIDGET_MACOS_DIRECTORY}/BudgetFlowWidget"
+
 cp "${PROJECT_ROOT}/Packaging/Info.plist" "${CONTENTS_DIRECTORY}/Info.plist"
+cp "${PROJECT_ROOT}/Packaging/WidgetInfo.plist" "${WIDGET_CONTENTS_DIRECTORY}/Info.plist"
 cp "${PROJECT_ROOT}/Sources/BudgetFlow/Resources/BudgetFlow.icns" "${RESOURCES_DIRECTORY}/BudgetFlow.icns"
 cp "${PROJECT_ROOT}/Sources/BudgetFlow/Resources/BudgetFlowIcon.png" "${RESOURCES_DIRECTORY}/BudgetFlowIcon.png"
+cp "${PROJECT_ROOT}/Sources/BudgetFlow/Resources/BudgetFlowIcon.png" \
+    "${WIDGET_RESOURCES_DIRECTORY}/BudgetFlowIcon.png"
 
 codesign --force --sign - "${FRAMEWORKS_DIRECTORY}/libBudgetCore.dylib"
-codesign --force --deep --sign - "${APP_BUNDLE}"
+codesign --force --sign - \
+    --entitlements "${PROJECT_ROOT}/Packaging/BudgetFlowWidget.entitlements" \
+    "${WIDGET_BUNDLE}"
+codesign --force --sign - \
+    --entitlements "${PROJECT_ROOT}/Packaging/BudgetFlow.entitlements" \
+    "${APP_BUNDLE}"
 codesign --verify --deep --strict "${APP_BUNDLE}"
 plutil -lint "${CONTENTS_DIRECTORY}/Info.plist"
+plutil -lint "${WIDGET_CONTENTS_DIRECTORY}/Info.plist"
 
 echo "Built ${APP_BUNDLE}"
