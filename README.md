@@ -33,7 +33,7 @@ xcodegen generate
 2. In **Xcode > Settings > Apple Accounts**, sign in to an Apple Account.
 3. Select the **BudgetFlow** project, then choose the same Team for the
    **BudgetFlow** and **BudgetFlowWidget** targets under **Signing & Capabilities**.
-4. Confirm both targets use the `group.com.zahinadri.BudgetFlow` App Group.
+4. Confirm both targets use the `2796SY86W6.com.zahinadri.BudgetFlow` App Group. Sandboxed macOS group identifiers must begin with the signing Team ID.
 5. Select the **BudgetFlow** scheme and **My Mac**, then press **Run**.
 
 The app target embeds the WidgetKit extension automatically. After opening

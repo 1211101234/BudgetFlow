@@ -38,7 +38,8 @@ public struct BudgetWidgetSummary: Codable, Equatable, Sendable {
 }
 
 public enum BudgetWidgetSharedStore {
-    public static let appGroupIdentifier = "group.com.zahinadri.BudgetFlow"
+    // Sandboxed macOS app groups must be prefixed with the signing Team ID.
+    public static let appGroupIdentifier = "2796SY86W6.com.zahinadri.BudgetFlow"
     private static let summaryKey = "budget-widget-summary-v1"
 
     public static func save(_ summary: BudgetWidgetSummary) throws {
