@@ -1,0 +1,93 @@
+name: BudgetFlow
+
+options:
+  createIntermediateGroups: true
+  deploymentTarget:
+    macOS: "14.0"
+  minimumXcodeGenVersion: "2.46.0"
+
+settings:
+  base:
+    CLANG_ENABLE_MODULES: YES
+    CODE_SIGN_STYLE: Automatic
+    CURRENT_PROJECT_VERSION: 2
+    DEVELOPMENT_TEAM: 2796SY86W6
+    MARKETING_VERSION: 0.2.0
+    SWIFT_STRICT_CONCURRENCY: complete
+    SWIFT_VERSION: 6.0
+
+targets:
+  BudgetCore:
+    type: framework
+    platform: macOS
+    sources:
+      - path: Sources/BudgetCore
+    settings:
+      base:
+        DEFINES_MODULE: YES
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.zahinadri.BudgetFlow.Core
+        SKIP_INSTALL: YES
+
+  BudgetFlow:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources/BudgetFlow
+    dependencies:
+      - target: BudgetCore
+      - target: BudgetFlowWidget
+        embed: true
+    settings:
+      base:
+        CODE_SIGN_ENTITLEMENTS: Packaging/BudgetFlow.entitlements
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: Packaging/Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: com.zahinadri.BudgetFlow
+        PRODUCT_NAME: BudgetFlow
+
+  BudgetFlowWidget:
+    type: app-extension
+    platform: macOS
+    sources:
+      - path: Sources/BudgetFlowWidget
+    dependencies:
+      - target: BudgetCore
+    settings:
+      base:
+        APPLICATION_EXTENSION_API_ONLY: YES
+        CODE_SIGN_ENTITLEMENTS: Packaging/BudgetFlowWidget.entitlements
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: Packaging/WidgetInfo.plist
+        PRODUCT_BUNDLE_IDENTIFIER: com.zahinadri.BudgetFlow.Widget
+        PRODUCT_NAME: BudgetFlowWidget
+        SKIP_INSTALL: YES
+
+  BudgetCoreTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Tests/BudgetCoreTests
+    dependencies:
+      - target: BudgetCore
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.zahinadri.BudgetFlow.CoreTests
+
+schemes:
+  BudgetFlow:
+    build:
+      targets:
+        BudgetFlow: all
+        BudgetFlowWidget: all
+        BudgetCore: all
+        BudgetCoreTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - BudgetCoreTests
+    archive:
+      config: Release

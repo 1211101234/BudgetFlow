@@ -47,7 +47,7 @@ final class BudgetEngineTests: XCTestCase {
 
     func testManualOverAllocationIsRejectedByAdviceEngine() {
         let profile = makeProfile()
-        let plan = AllocationPlan(longTermSavings: 2_000)
+        let plan = AllocationPlan(longTermSavings: 3_000)
 
         let observations = BudgetEngine.observations(for: profile, allocation: plan)
 
